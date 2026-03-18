@@ -4,6 +4,7 @@ pub mod enemy;
 pub mod input;
 pub mod level;
 pub mod physics;
+pub mod platforms;
 pub mod player;
 pub mod state;
 
@@ -11,6 +12,7 @@ use enemy::EnemyPlugin;
 use input::InputPlugin;
 use level::LevelPlugin;
 use physics::PhysicsPlugin;
+use platforms::PlatformPlugin;
 use player::PlayerPlugin;
 use state::StatePlugin;
 
@@ -24,5 +26,6 @@ impl Plugin for GameCorePlugin {
         app.add_plugins(LevelPlugin);
         app.add_plugins(PlayerPlugin);
         app.add_plugins(EnemyPlugin);
+        app.add_plugins(PlatformPlugin);
     }
 }

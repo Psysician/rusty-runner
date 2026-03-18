@@ -78,7 +78,7 @@ fn check_level_loaded(
 
 fn process_tiled_objects(
     mut commands: Commands,
-    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>)>,
+    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>, Without<crate::platforms::MovingPlatform>)>,
 ) {
     for (entity, name) in objects.iter() {
         match name.0.as_str() {
@@ -103,6 +103,18 @@ fn process_tiled_objects(
                     },
                     avian2d::prelude::RigidBody::Kinematic,
                     avian2d::prelude::Collider::rectangle(24.0, 24.0),
+                ));
+            }
+            n if n.starts_with("moving_platform") => {
+                commands.entity(entity).insert((
+                    crate::platforms::MovingPlatform {
+                        points: vec![
+                            Vec2::new(0.0, 0.0),
+                            Vec2::new(200.0, 0.0),
+                        ],
+                        speed: 60.0,
+                        current_target: 0,
+                    },
                 ));
             }
             _ => {}
