@@ -80,6 +80,11 @@ fn spawn_player(
         TnuaController::<PlayerScheme>::default(),
         TnuaConfig::<PlayerScheme>(config_handle),
         Transform::from_xyz(spawn_pos.x, spawn_pos.y, spawn_pos.z),
+        Sprite {
+            color: Color::srgb(0.2, 0.6, 1.0),
+            custom_size: Some(Vec2::new(16.0, 24.0)),
+            ..default()
+        },
         DespawnOnExit(AppState::Playing),
     ));
 }
