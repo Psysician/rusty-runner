@@ -3,6 +3,9 @@ use game_core::input::GameInputMessage;
 use game_core::state::AppState;
 
 pub mod bot;
+pub mod metrics;
+pub mod pathfind;
+pub mod replay;
 pub mod world_state;
 
 use world_state::{GameWorldStateResource, build_world_state};
@@ -14,7 +17,8 @@ pub struct GameAiPlugin;
 
 impl Plugin for GameAiPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<GameWorldStateResource>()
+        app.add_plugins(metrics::MetricsPlugin)
+            .init_resource::<GameWorldStateResource>()
             .add_systems(
                 Update,
                 (build_world_state, run_bot_decision)
