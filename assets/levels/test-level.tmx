@@ -19,6 +19,13 @@
     <property name="entity_type" value="coin"/>
    </properties>
   </object>
+  <object name="enemy_walker" x="600" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="100"/>
+   </properties>
+  </object>
  </objectgroup>
 
  <objectgroup name="collision">

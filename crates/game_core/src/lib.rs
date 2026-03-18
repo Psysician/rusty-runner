@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 
+pub mod enemy;
 pub mod input;
 pub mod level;
 pub mod physics;
 pub mod player;
 pub mod state;
 
+use enemy::EnemyPlugin;
 use input::InputPlugin;
 use level::LevelPlugin;
 use physics::PhysicsPlugin;
@@ -21,5 +23,6 @@ impl Plugin for GameCorePlugin {
         app.add_plugins(PhysicsPlugin);
         app.add_plugins(LevelPlugin);
         app.add_plugins(PlayerPlugin);
+        app.add_plugins(EnemyPlugin);
     }
 }

@@ -78,7 +78,7 @@ fn check_level_loaded(
 
 fn process_tiled_objects(
     mut commands: Commands,
-    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>)>,
+    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>)>,
 ) {
     for (entity, name) in objects.iter() {
         match name.0.as_str() {
@@ -90,6 +90,20 @@ fn process_tiled_objects(
             }
             n if n.starts_with("coin") => {
                 commands.entity(entity).insert(Coin);
+            }
+            n if n.starts_with("enemy_walker") => {
+                commands.entity(entity).insert((
+                    crate::enemy::Enemy,
+                    crate::enemy::EnemyType::Walker,
+                    crate::enemy::PatrolDirection { right: true },
+                    crate::enemy::PatrolConfig {
+                        speed: 80.0,
+                        distance: 100.0,
+                        origin_x: 0.0,
+                    },
+                    avian2d::prelude::RigidBody::Kinematic,
+                    avian2d::prelude::Collider::rectangle(24.0, 24.0),
+                ));
             }
             _ => {}
         }
