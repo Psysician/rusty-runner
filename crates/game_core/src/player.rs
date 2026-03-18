@@ -52,7 +52,14 @@ fn spawn_player(
     mut commands: Commands,
     config: Res<PlayerConfig>,
     mut configs: ResMut<Assets<PlayerSchemeConfig>>,
+    spawn_query: Query<&Transform, With<crate::level::PlayerSpawn>>,
 ) {
+    let spawn_pos = spawn_query
+        .iter()
+        .next()
+        .map(|t| t.translation)
+        .unwrap_or(Vec3::new(0.0, 100.0, 0.0));
+
     let config_handle = configs.add(PlayerSchemeConfig {
         basis: TnuaBuiltinWalkConfig {
             float_height: config.float_height,
@@ -72,7 +79,7 @@ fn spawn_player(
         LockedAxes::ROTATION_LOCKED,
         TnuaController::<PlayerScheme>::default(),
         TnuaConfig::<PlayerScheme>(config_handle),
-        Transform::from_xyz(0.0, 100.0, 0.0),
+        Transform::from_xyz(spawn_pos.x, spawn_pos.y, spawn_pos.z),
         DespawnOnExit(AppState::Playing),
     ));
 }
