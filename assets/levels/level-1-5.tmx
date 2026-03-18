@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal"
+     renderorder="right-down" width="60" height="15"
+     tilewidth="32" tileheight="32" infinite="0">
+
+ <objectgroup name="entities">
+  <object name="player_spawn" x="64" y="384" width="32" height="32">
+   <properties>
+    <property name="entity_type" value="player_spawn"/>
+   </properties>
+  </object>
+  <object name="coin1" x="320" y="256" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin2" x="560" y="160" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin3" x="800" y="96" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin4" x="1100" y="192" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin5" x="1400" y="288" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin6" x="1650" y="192" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="enemy_walker" x="400" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="80"/>
+   </properties>
+  </object>
+  <object name="enemy_jumper" x="700" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="jumper"/>
+    <property name="patrol_distance" type="float" value="100"/>
+    <property name="jump_force" type="float" value="300"/>
+   </properties>
+  </object>
+  <object name="enemy_jumper2" x="1200" y="320" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="jumper"/>
+    <property name="patrol_distance" type="float" value="80"/>
+    <property name="jump_force" type="float" value="250"/>
+   </properties>
+  </object>
+  <object name="enemy_walker2" x="1500" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="100"/>
+   </properties>
+  </object>
+  <object name="goal" x="1800" y="352" width="32" height="64">
+   <properties>
+    <property name="entity_type" value="goal"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="collision">
+  <object name="ground1" x="0" y="416" width="500" height="64"/>
+  <object name="ground2" x="600" y="416" width="300" height="64"/>
+  <object name="ground3" x="1050" y="416" width="200" height="64"/>
+  <object name="ground4" x="1350" y="416" width="570" height="64"/>
+  <object name="oneway1" x="280" y="288" width="128" height="16">
+   <properties>
+    <property name="one_way" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object name="oneway2" x="500" y="192" width="128" height="16">
+   <properties>
+    <property name="one_way" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object name="oneway3" x="740" y="128" width="128" height="16">
+   <properties>
+    <property name="one_way" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object name="oneway4" x="1050" y="224" width="128" height="16">
+   <properties>
+    <property name="one_way" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object name="platform1" x="1150" y="352" width="128" height="32"/>
+  <object name="oneway5" x="1600" y="224" width="128" height="16">
+   <properties>
+    <property name="one_way" type="bool" value="true"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

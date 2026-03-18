@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal"
+     renderorder="right-down" width="40" height="15"
+     tilewidth="32" tileheight="32" infinite="0">
+
+ <objectgroup name="entities">
+  <object name="player_spawn" x="64" y="384" width="32" height="32">
+   <properties>
+    <property name="entity_type" value="player_spawn"/>
+   </properties>
+  </object>
+  <object name="coin1" x="200" y="320" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin2" x="1080" y="320" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="powerup_growth" x="128" y="320" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="powerup"/>
+    <property name="powerup_type" value="growth"/>
+   </properties>
+  </object>
+  <object name="powerup_dash" x="200" y="256" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="powerup"/>
+    <property name="powerup_type" value="dash"/>
+   </properties>
+  </object>
+  <object name="boss_spawn" x="608" y="352" width="64" height="64">
+   <properties>
+    <property name="entity_type" value="boss"/>
+   </properties>
+  </object>
+  <object name="goal" x="1120" y="352" width="32" height="64">
+   <properties>
+    <property name="entity_type" value="goal"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="collision">
+  <object name="ground" x="0" y="416" width="1280" height="64"/>
+  <object name="wall_left" x="0" y="0" width="32" height="416"/>
+  <object name="wall_right" x="1248" y="0" width="32" height="416"/>
+  <object name="ceiling" x="0" y="0" width="1280" height="32"/>
+  <object name="boss_wall" x="960" y="32" width="32" height="384"/>
+  <object name="platform_left" x="160" y="288" width="128" height="32"/>
+  <object name="platform_center_left" x="416" y="256" width="96" height="32"/>
+  <object name="platform_center_right" x="768" y="256" width="96" height="32"/>
+  <object name="platform_right" x="1056" y="288" width="128" height="32"/>
+ </objectgroup>
+</map>

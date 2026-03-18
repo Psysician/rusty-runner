@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal"
+     renderorder="right-down" width="60" height="15"
+     tilewidth="32" tileheight="32" infinite="0">
+
+ <objectgroup name="entities">
+  <object name="player_spawn" x="64" y="384" width="32" height="32">
+   <properties>
+    <property name="entity_type" value="player_spawn"/>
+   </properties>
+  </object>
+  <object name="coin1" x="256" y="352" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin2" x="500" y="224" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin3" x="800" y="192" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin4" x="1100" y="288" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin5" x="1500" y="320" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="powerup_growth" x="700" y="192" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="powerup"/>
+    <property name="powerup_type" value="growth"/>
+   </properties>
+  </object>
+  <object name="enemy_walker" x="350" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="100"/>
+   </properties>
+  </object>
+  <object name="enemy_walker2" x="950" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="120"/>
+   </properties>
+  </object>
+  <object name="enemy_walker3" x="1300" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="80"/>
+   </properties>
+  </object>
+  <object name="enemy_walker4" x="1600" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="60"/>
+   </properties>
+  </object>
+  <object name="goal" x="1800" y="352" width="32" height="64">
+   <properties>
+    <property name="entity_type" value="goal"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="collision">
+  <object name="ground1" x="0" y="416" width="600" height="64"/>
+  <object name="ground2" x="750" y="416" width="400" height="64"/>
+  <object name="ground3" x="1250" y="416" width="670" height="64"/>
+  <object name="platform1" x="200" y="320" width="128" height="32"/>
+  <object name="platform2" x="450" y="256" width="128" height="32"/>
+  <object name="platform3" x="650" y="224" width="160" height="32"/>
+  <object name="platform4" x="450" y="160" width="96" height="32"/>
+  <object name="platform5" x="1050" y="320" width="128" height="32"/>
+ </objectgroup>
+</map>

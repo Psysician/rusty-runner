@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal"
+     renderorder="right-down" width="60" height="15"
+     tilewidth="32" tileheight="32" infinite="0">
+
+ <objectgroup name="entities">
+  <object name="player_spawn" x="64" y="384" width="32" height="32">
+   <properties>
+    <property name="entity_type" value="player_spawn"/>
+   </properties>
+  </object>
+  <object name="coin1" x="400" y="256" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin2" x="750" y="320" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin3" x="1100" y="256" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin4" x="1500" y="288" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="enemy_walker" x="350" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="100"/>
+   </properties>
+  </object>
+  <object name="enemy_walker2" x="1200" y="384" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="80"/>
+   </properties>
+  </object>
+  <object name="moving_platform1" x="550" y="320" width="96" height="32">
+   <properties>
+    <property name="entity_type" value="moving_platform"/>
+    <property name="move_x" type="float" value="160"/>
+    <property name="move_y" type="float" value="0"/>
+    <property name="speed" type="float" value="60"/>
+   </properties>
+  </object>
+  <object name="moving_platform2" x="1050" y="288" width="96" height="32">
+   <properties>
+    <property name="entity_type" value="moving_platform"/>
+    <property name="move_x" type="float" value="0"/>
+    <property name="move_y" type="float" value="96"/>
+    <property name="speed" type="float" value="40"/>
+   </properties>
+  </object>
+  <object name="goal" x="1800" y="352" width="32" height="64">
+   <properties>
+    <property name="entity_type" value="goal"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="collision">
+  <object name="ground1" x="0" y="416" width="500" height="64"/>
+  <object name="ground2" x="700" y="416" width="300" height="64"/>
+  <object name="ground3" x="1150" y="416" width="300" height="64"/>
+  <object name="ground4" x="1600" y="416" width="320" height="64"/>
+  <object name="platform1" x="350" y="288" width="128" height="32"/>
+  <object name="platform2" x="1450" y="320" width="128" height="32"/>
+ </objectgroup>
+</map>

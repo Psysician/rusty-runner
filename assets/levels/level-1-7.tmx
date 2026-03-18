@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal"
+     renderorder="right-down" width="80" height="20"
+     tilewidth="32" tileheight="32" infinite="0">
+
+ <objectgroup name="entities">
+  <object name="player_spawn" x="64" y="544" width="32" height="32">
+   <properties>
+    <property name="entity_type" value="player_spawn"/>
+   </properties>
+  </object>
+  <object name="coin1" x="400" y="480" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin2" x="750" y="416" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin3" x="1100" y="448" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin4" x="1500" y="384" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin5" x="1900" y="448" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="coin6" x="2200" y="480" width="16" height="16">
+   <properties>
+    <property name="entity_type" value="coin"/>
+   </properties>
+  </object>
+  <object name="enemy_spiker" x="500" y="544" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="spiker"/>
+   </properties>
+  </object>
+  <object name="enemy_spiker2" x="1000" y="544" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="spiker"/>
+   </properties>
+  </object>
+  <object name="enemy_spiker3" x="1700" y="544" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="spiker"/>
+   </properties>
+  </object>
+  <object name="enemy_walker" x="1300" y="544" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="walker"/>
+    <property name="patrol_distance" type="float" value="80"/>
+   </properties>
+  </object>
+  <object name="enemy_flyer" x="800" y="320" width="24" height="24">
+   <properties>
+    <property name="entity_type" value="enemy"/>
+    <property name="enemy_type" value="flyer"/>
+    <property name="patrol_distance" type="float" value="100"/>
+   </properties>
+  </object>
+  <object name="wind_zone1" x="600" y="320" width="200" height="256">
+   <properties>
+    <property name="entity_type" value="wind_zone"/>
+    <property name="wind_x" type="float" value="-80"/>
+    <property name="wind_y" type="float" value="0"/>
+   </properties>
+  </object>
+  <object name="wind_zone2" x="1400" y="256" width="200" height="320">
+   <properties>
+    <property name="entity_type" value="wind_zone"/>
+    <property name="wind_x" type="float" value="100"/>
+    <property name="wind_y" type="float" value="0"/>
+   </properties>
+  </object>
+  <object name="wind_zone3" x="2000" y="320" width="160" height="256">
+   <properties>
+    <property name="entity_type" value="wind_zone"/>
+    <property name="wind_x" type="float" value="-60"/>
+    <property name="wind_y" type="float" value="-40"/>
+   </properties>
+  </object>
+  <object name="goal" x="2400" y="512" width="32" height="64">
+   <properties>
+    <property name="entity_type" value="goal"/>
+   </properties>
+  </object>
+ </objectgroup>
+
+ <objectgroup name="collision">
+  <object name="ground1" x="0" y="576" width="550" height="64"/>
+  <object name="ground2" x="650" y="576" width="300" height="64"/>
+  <object name="ground3" x="1100" y="576" width="400" height="64"/>
+  <object name="ground4" x="1650" y="576" width="300" height="64"/>
+  <object name="ground5" x="2100" y="576" width="460" height="64"/>
+  <object name="platform1" x="350" y="480" width="96" height="32"/>
+  <object name="platform2" x="700" y="448" width="96" height="32"/>
+  <object name="platform3" x="1050" y="480" width="96" height="32"/>
+  <object name="platform4" x="1450" y="416" width="96" height="32"/>
+  <object name="platform5" x="1850" y="480" width="96" height="32"/>
+  <object name="platform6" x="2150" y="512" width="96" height="32"/>
+ </objectgroup>
+</map>
