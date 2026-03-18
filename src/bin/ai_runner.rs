@@ -23,8 +23,9 @@ fn main() {
     let bot: Box<dyn game_ai::bot::BotStrategy> = match args.bot.as_str() {
         "rightrunner" => Box::new(RightRunnerBot::new()),
         "random" => Box::new(RandomBot::new(42)),
+        "pathfind" => Box::new(game_ai::pathfind::PathfindBot::new()),
         _ => {
-            eprintln!("Unknown bot: {}. Available: rightrunner, random", args.bot);
+            eprintln!("Unknown bot: {}. Available: rightrunner, random, pathfind", args.bot);
             std::process::exit(1);
         }
     };
