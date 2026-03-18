@@ -1,3 +1,4 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_ecs_tiled::prelude::*;
 
@@ -86,10 +87,20 @@ fn process_tiled_objects(
                 commands.entity(entity).insert(PlayerSpawn);
             }
             "goal" => {
-                commands.entity(entity).insert(LevelGoal);
+                commands.entity(entity).insert((
+                    LevelGoal,
+                    Collider::rectangle(32.0, 64.0),
+                    Sensor,
+                    CollisionEventsEnabled,
+                ));
             }
             n if n.starts_with("coin") => {
-                commands.entity(entity).insert(Coin);
+                commands.entity(entity).insert((
+                    Coin,
+                    Collider::rectangle(16.0, 16.0),
+                    Sensor,
+                    CollisionEventsEnabled,
+                ));
             }
             n if n.starts_with("enemy_walker") => {
                 commands.entity(entity).insert((
@@ -103,6 +114,44 @@ fn process_tiled_objects(
                     },
                     avian2d::prelude::RigidBody::Kinematic,
                     avian2d::prelude::Collider::rectangle(24.0, 24.0),
+                ));
+            }
+            n if n.starts_with("enemy_jumper") => {
+                commands.entity(entity).insert((
+                    crate::enemy::Enemy,
+                    crate::enemy::EnemyType::Jumper,
+                    crate::enemy::JumperTimer {
+                        timer: bevy::time::Timer::from_seconds(
+                            2.0,
+                            bevy::time::TimerMode::Repeating,
+                        ),
+                    },
+                    RigidBody::Dynamic,
+                    Collider::rectangle(24.0, 24.0),
+                    LockedAxes::ROTATION_LOCKED,
+                ));
+            }
+            n if n.starts_with("enemy_flyer") => {
+                commands.entity(entity).insert((
+                    crate::enemy::Enemy,
+                    crate::enemy::EnemyType::Flyer,
+                    crate::enemy::FlyerState {
+                        elapsed: 0.0,
+                        amplitude: 40.0,
+                        frequency: 2.0,
+                        base_y: 0.0,
+                        speed_x: 50.0,
+                    },
+                    RigidBody::Kinematic,
+                    Collider::rectangle(24.0, 24.0),
+                ));
+            }
+            n if n.starts_with("enemy_spiker") => {
+                commands.entity(entity).insert((
+                    crate::enemy::Enemy,
+                    crate::enemy::EnemyType::Spiker,
+                    RigidBody::Static,
+                    Collider::rectangle(24.0, 24.0),
                 ));
             }
             n if n.starts_with("moving_platform") => {
