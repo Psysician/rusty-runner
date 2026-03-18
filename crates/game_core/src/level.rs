@@ -79,7 +79,7 @@ fn check_level_loaded(
 
 fn process_tiled_objects(
     mut commands: Commands,
-    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>, Without<crate::platforms::MovingPlatform>)>,
+    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>, Without<crate::platforms::MovingPlatform>, Without<crate::wind::WindZone>)>,
 ) {
     for (entity, name) in objects.iter() {
         match name.0.as_str() {
@@ -164,6 +164,15 @@ fn process_tiled_objects(
                         speed: 60.0,
                         current_target: 0,
                     },
+                ));
+            }
+            n if n.starts_with("wind") => {
+                commands.entity(entity).insert((
+                    crate::wind::WindZone {
+                        force: Vec2::new(0.0, 500.0),
+                    },
+                    Collider::rectangle(100.0, 200.0),
+                    Sensor,
                 ));
             }
             _ => {}

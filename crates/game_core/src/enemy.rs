@@ -1,3 +1,4 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::state::AppState;
@@ -25,13 +26,32 @@ pub struct PatrolConfig {
     pub origin_x: f32,
 }
 
+#[derive(Component)]
+pub struct JumperTimer {
+    pub timer: Timer,
+}
+
+#[derive(Component)]
+pub struct FlyerState {
+    pub elapsed: f32,
+    pub amplitude: f32,
+    pub frequency: f32,
+    pub base_y: f32,
+    pub speed_x: f32,
+}
+
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             FixedUpdate,
-            walker_patrol.run_if(in_state(AppState::Playing)),
+            (
+                walker_patrol,
+                jumper_behavior,
+                flyer_behavior,
+            )
+                .run_if(in_state(AppState::Playing)),
         );
     }
 }
@@ -57,5 +77,29 @@ fn walker_patrol(
         } else if transform.translation.x < config.origin_x - config.distance {
             direction.right = true;
         }
+    }
+}
+
+fn jumper_behavior(
+    mut query: Query<(&mut LinearVelocity, &mut JumperTimer), With<Enemy>>,
+    time: Res<Time>,
+) {
+    for (mut velocity, mut jumper) in &mut query {
+        jumper.timer.tick(time.delta());
+        if jumper.timer.just_finished() {
+            velocity.y = 400.0;
+        }
+    }
+}
+
+fn flyer_behavior(
+    mut query: Query<(&mut Transform, &mut FlyerState), With<Enemy>>,
+    time: Res<Time>,
+) {
+    for (mut transform, mut flyer) in &mut query {
+        flyer.elapsed += time.delta_secs();
+        transform.translation.y =
+            flyer.base_y + (flyer.elapsed * flyer.frequency).sin() * flyer.amplitude;
+        transform.translation.x += flyer.speed_x * time.delta_secs();
     }
 }
