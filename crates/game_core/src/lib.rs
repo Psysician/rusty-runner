@@ -32,5 +32,6 @@ impl Plugin for GameCorePlugin {
         app.add_plugins(EnemyPlugin);
         app.add_plugins(CollisionPlugin);
         app.add_plugins(PlatformPlugin);
+        app.add_plugins(WindPlugin);
     }
 }
