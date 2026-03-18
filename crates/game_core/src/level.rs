@@ -79,7 +79,7 @@ fn check_level_loaded(
 
 fn process_tiled_objects(
     mut commands: Commands,
-    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>, Without<crate::platforms::MovingPlatform>, Without<crate::wind::WindZone>)>,
+    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>, Without<crate::platforms::MovingPlatform>, Without<crate::wind::WindZone>, Without<crate::items::ItemType>, Without<crate::boss::Boss>)>,
 ) {
     for (entity, name) in objects.iter() {
         match name.0.as_str() {
@@ -166,6 +166,30 @@ fn process_tiled_objects(
                     },
                 ));
             }
+            n if n.starts_with("powerup_growth") => {
+                commands.entity(entity).insert((
+                    crate::items::ItemType::Growth,
+                    Collider::rectangle(20.0, 20.0),
+                    Sensor,
+                    CollisionEventsEnabled,
+                ));
+            }
+            n if n.starts_with("powerup_dash") => {
+                commands.entity(entity).insert((
+                    crate::items::ItemType::Special,
+                    Collider::rectangle(20.0, 20.0),
+                    Sensor,
+                    CollisionEventsEnabled,
+                ));
+            }
+            n if n.starts_with("powerup_invincible") => {
+                commands.entity(entity).insert((
+                    crate::items::ItemType::Invincible,
+                    Collider::rectangle(20.0, 20.0),
+                    Sensor,
+                    CollisionEventsEnabled,
+                ));
+            }
             n if n.starts_with("wind") => {
                 commands.entity(entity).insert((
                     crate::wind::WindZone {
@@ -173,6 +197,18 @@ fn process_tiled_objects(
                     },
                     Collider::rectangle(100.0, 200.0),
                     Sensor,
+                ));
+            }
+            "boss_spawn" => {
+                commands.entity(entity).insert((
+                    crate::boss::Boss { hp: 3, max_hp: 3 },
+                    crate::boss::BossPhase::Charging { direction: 1.0 },
+                    crate::boss::BossArena { left: -300.0, right: 300.0, ground_y: -50.0 },
+                    crate::enemy::Enemy,
+                    RigidBody::Dynamic,
+                    Collider::rectangle(48.0, 48.0),
+                    LockedAxes::ROTATION_LOCKED,
+                    CollisionEventsEnabled,
                 ));
             }
             _ => {}

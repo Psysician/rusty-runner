@@ -1,9 +1,10 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
+use crate::boss::{Boss, BossPhase};
 use crate::enemy::Enemy;
 use crate::level::{Coin, LevelGoal};
-use crate::player::Player;
+use crate::player::{Player, PowerUpState, InvincibilityTimer};
 use crate::state::{AppState, GameData, GamePhase};
 
 const STOMP_TOLERANCE: f32 = 6.0;
@@ -55,6 +56,7 @@ impl Plugin for CollisionPlugin {
             (
                 handle_stomp,
                 handle_player_hit,
+                detect_boss_stomp,
             )
                 .run_if(in_state(GamePhase::Active)),
         );
@@ -110,12 +112,28 @@ fn handle_stomp(
 }
 
 fn handle_player_hit(
+    mut commands: Commands,
     mut reader: MessageReader<PlayerHitByEnemy>,
     mut game_data: ResMut<GameData>,
     mut next_state: ResMut<NextState<AppState>>,
     mut next_phase: ResMut<NextState<GamePhase>>,
+    mut player_query: Query<(Entity, Option<&InvincibilityTimer>, &mut PowerUpState), With<Player>>,
 ) {
     for _msg in reader.read() {
+        let Ok((entity, invincibility, mut power_up)) = player_query.single_mut() else {
+            break;
+        };
+
+        if invincibility.is_some() {
+            break;
+        }
+
+        if *power_up != PowerUpState::Small {
+            *power_up = PowerUpState::Small;
+            commands.entity(entity).remove::<crate::player::DashCooldown>();
+            break;
+        }
+
         if game_data.lives > 0 {
             game_data.lives -= 1;
         }
@@ -126,6 +144,51 @@ fn handle_player_hit(
             next_phase.set(GamePhase::Dying);
         }
         break;
+    }
+}
+
+fn detect_boss_stomp(
+    collisions: Collisions,
+    player_query: Query<(Entity, &Transform), With<Player>>,
+    mut boss_query: Query<(Entity, &Transform, &mut Boss, &mut BossPhase)>,
+    mut player_vel: Query<&mut LinearVelocity, With<Player>>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut game_data: ResMut<GameData>,
+) {
+    let Ok((player_entity, player_transform)) = player_query.single() else {
+        return;
+    };
+
+    for (boss_entity, boss_transform, mut boss, mut phase) in boss_query.iter_mut() {
+        if !collisions.contains(player_entity, boss_entity) {
+            continue;
+        }
+
+        let is_paused = matches!(*phase, BossPhase::PausedAtWall { .. });
+        if !is_paused {
+            continue;
+        }
+
+        let player_bottom = player_transform.translation.y - PLAYER_HALF_HEIGHT;
+        let boss_top = boss_transform.translation.y + ENEMY_HALF_HEIGHT;
+
+        if player_bottom >= boss_top - STOMP_TOLERANCE {
+            boss.hp = boss.hp.saturating_sub(1);
+            game_data.score += 500;
+
+            if let Ok(mut velocity) = player_vel.single_mut() {
+                velocity.y = STOMP_BOUNCE_VELOCITY;
+            }
+
+            if boss.hp == 0 {
+                next_state.set(AppState::Victory);
+            } else {
+                let boss_x = boss_transform.translation.x;
+                *phase = BossPhase::Charging {
+                    direction: if boss_x < 0.0 { 1.0 } else { -1.0 },
+                };
+            }
+        }
     }
 }
 

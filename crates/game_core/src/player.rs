@@ -7,6 +7,26 @@ use bevy_tnua_avian2d::prelude::*;
 use crate::input::GameInputMessage;
 use crate::state::AppState;
 
+#[derive(Component, Debug, Clone, PartialEq, Default)]
+pub enum PowerUpState {
+    #[default]
+    Small,
+    Big,
+    Dash,
+    Invincible,
+}
+
+#[derive(Component)]
+pub struct DashCooldown {
+    pub timer: Timer,
+    pub available: bool,
+}
+
+#[derive(Component)]
+pub struct InvincibilityTimer {
+    pub timer: Timer,
+}
+
 #[derive(Component)]
 pub struct Player;
 
@@ -74,6 +94,7 @@ fn spawn_player(
 
     commands.spawn((
         Player,
+        PowerUpState::default(),
         RigidBody::Dynamic,
         Collider::rectangle(16.0, 24.0),
         LockedAxes::ROTATION_LOCKED,
