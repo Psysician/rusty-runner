@@ -2951,6 +2951,7 @@ dependencies = [
 name = "game_ai"
 version = "0.1.0"
 dependencies = [
+ "avian2d 0.6.0",
  "bevy",
  "clap",
  "game_core",

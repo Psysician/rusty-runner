@@ -1,7 +1,7 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::boss::{Boss, BossPhase};
+use crate::boss::{Boss, BossPhase, Shockwave};
 use crate::enemy::Enemy;
 use crate::level::{Coin, LevelGoal};
 use crate::player::{Player, PowerUpState, InvincibilityTimer};
@@ -57,6 +57,7 @@ impl Plugin for CollisionPlugin {
                 handle_stomp,
                 handle_player_hit,
                 detect_boss_stomp,
+                detect_shockwave_hit,
             )
                 .run_if(in_state(GamePhase::Active)),
         );
@@ -119,31 +120,30 @@ fn handle_player_hit(
     mut next_phase: ResMut<NextState<GamePhase>>,
     mut player_query: Query<(Entity, Option<&InvincibilityTimer>, &mut PowerUpState), With<Player>>,
 ) {
-    for _msg in reader.read() {
-        let Ok((entity, invincibility, mut power_up)) = player_query.single_mut() else {
-            break;
-        };
+    let Some(_msg) = reader.read().next() else { return };
 
-        if invincibility.is_some() {
-            break;
-        }
+    let Ok((entity, invincibility, mut power_up)) = player_query.single_mut() else {
+        return;
+    };
 
-        if *power_up != PowerUpState::Small {
-            *power_up = PowerUpState::Small;
-            commands.entity(entity).remove::<crate::player::DashCooldown>();
-            break;
-        }
+    if invincibility.is_some() {
+        return;
+    }
 
-        if game_data.lives > 0 {
-            game_data.lives -= 1;
-        }
+    if *power_up != PowerUpState::Small {
+        *power_up = PowerUpState::Small;
+        commands.entity(entity).remove::<crate::player::DashCooldown>();
+        return;
+    }
 
-        if game_data.lives == 0 {
-            next_state.set(AppState::GameOver);
-        } else {
-            next_phase.set(GamePhase::Dying);
-        }
-        break;
+    if game_data.lives > 0 {
+        game_data.lives -= 1;
+    }
+
+    if game_data.lives == 0 {
+        next_state.set(AppState::GameOver);
+    } else {
+        next_phase.set(GamePhase::Dying);
     }
 }
 
@@ -230,6 +230,20 @@ fn detect_goal_reached(
             writer.write(PlayerReachedGoal { goal: goal_entity });
             next_state.set(AppState::LevelComplete);
             break;
+        }
+    }
+}
+
+fn detect_shockwave_hit(
+    collisions: Collisions,
+    player_query: Query<Entity, With<Player>>,
+    shockwave_query: Query<Entity, With<Shockwave>>,
+    mut hit_writer: MessageWriter<PlayerHitByEnemy>,
+) {
+    let Ok(player_entity) = player_query.single() else { return };
+    for shockwave_entity in shockwave_query.iter() {
+        if collisions.contains(player_entity, shockwave_entity) {
+            hit_writer.write(PlayerHitByEnemy { enemy: shockwave_entity });
         }
     }
 }

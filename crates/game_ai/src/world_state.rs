@@ -1,3 +1,4 @@
+use avian2d::prelude::LinearVelocity;
 use bevy::prelude::*;
 use game_core::enemy::Enemy;
 use game_core::level::LevelGoal;
@@ -32,13 +33,14 @@ impl Default for GameWorldStateResource {
 }
 
 pub fn build_world_state(
-    player_q: Query<&Transform, With<Player>>,
+    player_q: Query<(&Transform, Option<&LinearVelocity>), With<Player>>,
     enemy_q: Query<&Transform, With<Enemy>>,
     goal_q: Query<&Transform, With<LevelGoal>>,
     mut world_state: ResMut<GameWorldStateResource>,
 ) {
-    let Ok(player_transform) = player_q.single() else { return };
+    let Ok((player_transform, player_vel)) = player_q.single() else { return };
     let player_pos = player_transform.translation.truncate();
+    let player_velocity = player_vel.map(|v| v.0).unwrap_or(Vec2::ZERO);
 
     let nearby_enemies: Vec<_> = enemy_q
         .iter()
@@ -58,7 +60,7 @@ pub fn build_world_state(
 
     world_state.0 = GameWorldState {
         player_pos,
-        player_velocity: Vec2::ZERO,
+        player_velocity,
         nearby_enemies,
         ground_ahead: true,
         gap_ahead: false,

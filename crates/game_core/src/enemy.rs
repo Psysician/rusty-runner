@@ -1,7 +1,7 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::state::AppState;
+use crate::state::GamePhase;
 
 #[derive(Component)]
 pub struct Enemy;
@@ -45,14 +45,28 @@ pub struct EnemyPlugin;
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
+            Update,
+            fixup_walker_patrol_origin.run_if(in_state(GamePhase::Active)),
+        );
+        app.add_systems(
             FixedUpdate,
             (
                 walker_patrol,
                 jumper_behavior,
                 flyer_behavior,
             )
-                .run_if(in_state(AppState::Playing)),
+                .run_if(in_state(GamePhase::Active)),
         );
+    }
+}
+
+fn fixup_walker_patrol_origin(
+    mut query: Query<(&Transform, &mut PatrolConfig), (With<Enemy>, Added<PatrolConfig>)>,
+) {
+    for (transform, mut config) in &mut query {
+        if config.origin_x == 0.0 {
+            config.origin_x = transform.translation.x;
+        }
     }
 }
 

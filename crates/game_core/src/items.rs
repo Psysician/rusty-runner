@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::player::{DashCooldown, InvincibilityTimer, Player, PowerUpState};
-use crate::state::AppState;
+use crate::state::GamePhase;
 
 #[derive(Component, Debug, Clone)]
 pub enum ItemType {
@@ -24,7 +24,7 @@ impl Plugin for ItemPlugin {
                 tick_invincibility,
                 tick_dash_cooldown,
             )
-                .run_if(in_state(AppState::Playing)),
+                .run_if(in_state(GamePhase::Active)),
         );
     }
 }

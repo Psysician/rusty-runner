@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::enemy::Enemy;
-use crate::state::AppState;
+use crate::state::GamePhase;
 
 const BOSS_BASE_SPEED: f32 = 250.0;
 const BOSS_SPEED_SCALE_PER_DAMAGE: f32 = 50.0;
@@ -46,7 +46,7 @@ impl Plugin for BossPlugin {
             FixedUpdate,
             (boss_movement, boss_phase_transitions, boss_spawn_walkers, boss_shockwave)
                 .chain()
-                .run_if(in_state(AppState::Playing)),
+                .run_if(in_state(GamePhase::Active)),
         );
     }
 }

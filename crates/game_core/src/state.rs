@@ -46,6 +46,11 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<AppState>()
             .add_sub_state::<GamePhase>()
-            .init_resource::<GameData>();
+            .init_resource::<GameData>()
+            .add_systems(OnEnter(AppState::MainMenu), reset_game_data);
     }
+}
+
+fn reset_game_data(mut game_data: ResMut<GameData>) {
+    *game_data = GameData::default();
 }

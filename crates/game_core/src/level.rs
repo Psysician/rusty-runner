@@ -71,7 +71,7 @@ fn check_level_loaded(
     mut next_state: ResMut<NextState<AppState>>,
 ) {
     for storage in map_query.iter() {
-        if !storage.layers().next().is_none() {
+        if storage.layers().next().is_some() {
             next_state.set(AppState::Playing);
         }
     }
@@ -114,6 +114,7 @@ fn process_tiled_objects(
                     },
                     avian2d::prelude::RigidBody::Kinematic,
                     avian2d::prelude::Collider::rectangle(24.0, 24.0),
+                    CollisionEventsEnabled,
                 ));
             }
             n if n.starts_with("enemy_jumper") => {
@@ -129,6 +130,7 @@ fn process_tiled_objects(
                     RigidBody::Dynamic,
                     Collider::rectangle(24.0, 24.0),
                     LockedAxes::ROTATION_LOCKED,
+                    CollisionEventsEnabled,
                 ));
             }
             n if n.starts_with("enemy_flyer") => {
@@ -144,6 +146,7 @@ fn process_tiled_objects(
                     },
                     RigidBody::Kinematic,
                     Collider::rectangle(24.0, 24.0),
+                    CollisionEventsEnabled,
                 ));
             }
             n if n.starts_with("enemy_spiker") => {
@@ -152,6 +155,7 @@ fn process_tiled_objects(
                     crate::enemy::EnemyType::Spiker,
                     RigidBody::Static,
                     Collider::rectangle(24.0, 24.0),
+                    CollisionEventsEnabled,
                 ));
             }
             n if n.starts_with("moving_platform") => {
@@ -164,6 +168,8 @@ fn process_tiled_objects(
                         speed: 60.0,
                         current_target: 0,
                     },
+                    RigidBody::Kinematic,
+                    Collider::rectangle(128.0, 16.0),
                 ));
             }
             n if n.starts_with("powerup_growth") => {
@@ -197,6 +203,7 @@ fn process_tiled_objects(
                     },
                     Collider::rectangle(100.0, 200.0),
                     Sensor,
+                    CollisionEventsEnabled,
                 ));
             }
             "boss_spawn" => {
