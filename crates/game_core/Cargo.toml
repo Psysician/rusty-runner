@@ -11,3 +11,4 @@ bevy-tnua = { workspace = true }
 bevy-tnua-avian2d = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+dirs = "6"
