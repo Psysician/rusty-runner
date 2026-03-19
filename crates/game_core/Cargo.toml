@@ -7,8 +7,6 @@ edition = "2021"
 bevy = { workspace = true }
 avian2d = { workspace = true }
 bevy_ecs_tiled = { workspace = true }
-bevy-tnua = { workspace = true }
-bevy-tnua-avian2d = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 dirs = "6"
