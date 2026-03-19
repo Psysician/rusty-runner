@@ -47,6 +47,7 @@ fn add_goal_sprite(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn add_enemy_sprites(
     mut commands: Commands,
     asset_server: Res<AssetServer>,

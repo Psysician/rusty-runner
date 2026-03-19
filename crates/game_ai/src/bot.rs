@@ -5,6 +5,7 @@ pub trait BotStrategy: Send + Sync {
     fn decide(&mut self, state: &GameWorldState) -> GameInputMessage;
 }
 
+#[derive(Default)]
 pub struct RightRunnerBot;
 
 impl RightRunnerBot {
@@ -35,7 +36,7 @@ impl RandomBot {
         self.rng_state ^= self.rng_state << 13;
         self.rng_state ^= self.rng_state >> 7;
         self.rng_state ^= self.rng_state << 17;
-        self.rng_state % 2 == 0
+        self.rng_state.is_multiple_of(2)
     }
 }
 

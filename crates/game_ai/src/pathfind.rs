@@ -3,13 +3,14 @@ use crate::bot::BotStrategy;
 use crate::world_state::GameWorldState;
 use game_core::input::GameInputMessage;
 
+#[derive(Default)]
 pub struct PathfindBot {
     last_pos: Option<Vec2>,
 }
 
 impl PathfindBot {
     pub fn new() -> Self {
-        Self { last_pos: None }
+        Self::default()
     }
 }
 
@@ -20,7 +21,7 @@ impl BotStrategy for PathfindBot {
         let move_left = diff.x < -5.0;
         let should_jump = diff.y > 10.0 || state.gap_ahead || state.enemy_ahead;
 
-        let stuck = self.last_pos.map_or(false, |lp| lp.distance(state.player_pos) < 1.0);
+        let stuck = self.last_pos.is_some_and(|lp| lp.distance(state.player_pos) < 1.0);
         self.last_pos = Some(state.player_pos);
 
         GameInputMessage {

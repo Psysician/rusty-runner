@@ -60,6 +60,7 @@ impl Plugin for EnemyPlugin {
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn fixup_walker_patrol_origin(
     mut query: Query<(&Transform, &mut PatrolConfig), (With<Enemy>, Added<PatrolConfig>)>,
 ) {
@@ -70,6 +71,7 @@ fn fixup_walker_patrol_origin(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn walker_patrol(
     mut query: Query<
         (&mut Transform, &mut PatrolDirection, &PatrolConfig),

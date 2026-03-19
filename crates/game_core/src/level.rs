@@ -77,6 +77,7 @@ fn check_level_loaded(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn process_tiled_objects(
     mut commands: Commands,
     objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>, Without<crate::platforms::MovingPlatform>, Without<crate::wind::WindZone>, Without<crate::items::ItemType>, Without<crate::boss::Boss>)>,
