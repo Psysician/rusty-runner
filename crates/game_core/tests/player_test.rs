@@ -29,6 +29,7 @@ fn build_test_app() -> App {
     let mut app = App::new();
     app.add_plugins(MinimalPlugins);
     app.add_plugins(AssetPlugin::default());
+    app.add_plugins(bevy::image::ImagePlugin::default());
     app.add_plugins(TransformPlugin);
     app.add_plugins(bevy::scene::ScenePlugin);
     app.add_plugins(StatesPlugin);
