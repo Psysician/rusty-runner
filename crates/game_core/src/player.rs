@@ -62,8 +62,8 @@ impl Plugin for PlayerPlugin {
         app.add_plugins(TnuaAvian2dPlugin::new(PhysicsSchedule));
         app.add_systems(OnEnter(AppState::Playing), spawn_player);
         app.add_systems(
-            Update,
-            player_movement.run_if(in_state(AppState::Playing)),
+            PhysicsSchedule,
+            player_movement.in_set(TnuaUserControlsSystems),
         );
         app.add_systems(
             Update,
