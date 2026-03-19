@@ -62,8 +62,8 @@ impl Plugin for PlayerPlugin {
         app.add_plugins(TnuaAvian2dPlugin::new(PhysicsSchedule));
         app.add_systems(OnEnter(AppState::Playing), spawn_player);
         app.add_systems(
-            PhysicsSchedule,
-            player_movement.in_set(TnuaUserControlsSystems),
+            Update,
+            player_movement.run_if(in_state(AppState::Playing)),
         );
         app.add_systems(
             Update,
@@ -221,6 +221,7 @@ fn check_fall_death(
 }
 
 fn player_movement(
+    keys: Option<Res<ButtonInput<KeyCode>>>,
     mut reader: MessageReader<GameInputMessage>,
     mut query: Query<&mut TnuaController<PlayerScheme>, With<Player>>,
 ) {
@@ -228,6 +229,7 @@ fn player_movement(
     let mut jump_pressed = false;
     let mut jump_held = false;
 
+    // Read from message system (used by AI bots)
     for msg in reader.read() {
         if msg.move_left {
             move_dir -= 1.0;
@@ -242,6 +244,30 @@ fn player_movement(
             jump_held = true;
         }
     }
+
+    // Also read keyboard directly (reliable in all schedules)
+    if let Some(keys) = &keys {
+        if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
+            move_dir -= 1.0;
+        }
+        if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
+            move_dir += 1.0;
+        }
+        if keys.just_pressed(KeyCode::Space)
+            || keys.just_pressed(KeyCode::KeyW)
+            || keys.just_pressed(KeyCode::ArrowUp)
+        {
+            jump_pressed = true;
+        }
+        if keys.pressed(KeyCode::Space)
+            || keys.pressed(KeyCode::KeyW)
+            || keys.pressed(KeyCode::ArrowUp)
+        {
+            jump_held = true;
+        }
+    }
+
+    move_dir = move_dir.clamp(-1.0, 1.0);
 
     for mut controller in query.iter_mut() {
         controller.basis = TnuaBuiltinWalk {
