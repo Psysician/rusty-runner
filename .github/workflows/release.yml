@@ -1,0 +1,89 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: rusty-runner-linux-x86_64
+            binary_ext: ""
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: rusty-runner-windows-x86_64
+            binary_ext: ".exe"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+
+      - name: Build release
+        run: cargo build --release --bin game --bin ai_runner --bin level_test --target ${{ matrix.target }}
+
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p dist/${{ matrix.artifact_name }}
+          cp target/${{ matrix.target }}/release/game dist/${{ matrix.artifact_name }}/rusty-runner
+          cp target/${{ matrix.target }}/release/ai_runner dist/${{ matrix.artifact_name }}/
+          cp target/${{ matrix.target }}/release/level_test dist/${{ matrix.artifact_name }}/
+          cp -r assets dist/${{ matrix.artifact_name }}/
+          cd dist && tar czf ${{ matrix.artifact_name }}.tar.gz ${{ matrix.artifact_name }}
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/${{ matrix.artifact_name }}
+          Copy-Item "target/${{ matrix.target }}/release/game${{ matrix.binary_ext }}" "dist/${{ matrix.artifact_name }}/rusty-runner${{ matrix.binary_ext }}"
+          Copy-Item "target/${{ matrix.target }}/release/ai_runner${{ matrix.binary_ext }}" "dist/${{ matrix.artifact_name }}/"
+          Copy-Item "target/${{ matrix.target }}/release/level_test${{ matrix.binary_ext }}" "dist/${{ matrix.artifact_name }}/"
+          Copy-Item -Recurse "assets" "dist/${{ matrix.artifact_name }}/"
+          Compress-Archive -Path "dist/${{ matrix.artifact_name }}" -DestinationPath "dist/${{ matrix.artifact_name }}.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            dist/${{ matrix.artifact_name }}.tar.gz
+            dist/${{ matrix.artifact_name }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/*.tar.gz
+            artifacts/**/*.zip
+          generate_release_notes: true
