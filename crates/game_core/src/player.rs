@@ -70,6 +70,7 @@ impl Plugin for PlayerPlugin {
 
 fn spawn_player(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     config: Res<PlayerConfig>,
     mut configs: ResMut<Assets<PlayerSchemeConfig>>,
     spawn_query: Query<&Transform, With<crate::level::PlayerSpawn>>,
@@ -102,7 +103,7 @@ fn spawn_player(
         TnuaConfig::<PlayerScheme>(config_handle),
         Transform::from_xyz(spawn_pos.x, spawn_pos.y, spawn_pos.z),
         Sprite {
-            color: Color::srgb(0.2, 0.6, 1.0),
+            image: asset_server.load("sprites/player.png"),
             custom_size: Some(Vec2::new(16.0, 24.0)),
             ..default()
         },

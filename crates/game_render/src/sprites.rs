@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use game_core::level::{Coin, LevelGoal};
-use game_core::enemy::Enemy;
+use game_core::enemy::{Enemy, EnemyType};
+use game_core::boss::Boss;
 use game_core::items::ItemType;
 use game_core::wind::WindZone;
 use game_core::platforms::MovingPlatform;
@@ -12,7 +13,7 @@ impl Plugin for SpritesPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (add_coin_sprites, add_goal_sprite, add_enemy_sprites, add_item_sprites, add_wind_sprites, add_platform_sprites)
+            (add_coin_sprites, add_goal_sprite, add_enemy_sprites, add_boss_sprites, add_item_sprites, add_wind_sprites, add_platform_sprites)
                 .run_if(in_state(AppState::Playing)),
         );
     }
@@ -20,11 +21,12 @@ impl Plugin for SpritesPlugin {
 
 fn add_coin_sprites(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     coins: Query<Entity, (With<Coin>, Without<Sprite>)>,
 ) {
     for entity in &coins {
         commands.entity(entity).insert(Sprite {
-            color: Color::srgb(1.0, 0.85, 0.0),
+            image: asset_server.load("sprites/coin.png"),
             custom_size: Some(Vec2::new(16.0, 16.0)),
             ..default()
         });
@@ -33,11 +35,12 @@ fn add_coin_sprites(
 
 fn add_goal_sprite(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     goals: Query<Entity, (With<LevelGoal>, Without<Sprite>)>,
 ) {
     for entity in &goals {
         commands.entity(entity).insert(Sprite {
-            color: Color::srgb(0.0, 1.0, 0.3),
+            image: asset_server.load("sprites/goal.png"),
             custom_size: Some(Vec2::new(32.0, 64.0)),
             ..default()
         });
@@ -46,12 +49,34 @@ fn add_goal_sprite(
 
 fn add_enemy_sprites(
     mut commands: Commands,
-    enemies: Query<Entity, (With<Enemy>, Without<Sprite>)>,
+    asset_server: Res<AssetServer>,
+    enemies: Query<(Entity, Option<&EnemyType>), (With<Enemy>, Without<Boss>, Without<Sprite>)>,
 ) {
-    for entity in &enemies {
+    for (entity, enemy_type) in &enemies {
+        let path = match enemy_type {
+            Some(EnemyType::Walker) => "sprites/enemy_walker.png",
+            Some(EnemyType::Jumper) => "sprites/enemy_jumper.png",
+            Some(EnemyType::Flyer) => "sprites/enemy_flyer.png",
+            Some(EnemyType::Spiker) => "sprites/enemy_spiker.png",
+            None => "sprites/enemy_walker.png",
+        };
         commands.entity(entity).insert(Sprite {
-            color: Color::srgb(0.9, 0.2, 0.2),
+            image: asset_server.load(path),
             custom_size: Some(Vec2::new(24.0, 24.0)),
+            ..default()
+        });
+    }
+}
+
+fn add_boss_sprites(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    bosses: Query<Entity, (With<Boss>, Without<Sprite>)>,
+) {
+    for entity in &bosses {
+        commands.entity(entity).insert(Sprite {
+            image: asset_server.load("sprites/boss.png"),
+            custom_size: Some(Vec2::new(48.0, 48.0)),
             ..default()
         });
     }
@@ -59,16 +84,17 @@ fn add_enemy_sprites(
 
 fn add_item_sprites(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     items: Query<(Entity, &ItemType), Without<Sprite>>,
 ) {
     for (entity, item_type) in &items {
-        let color = match item_type {
-            ItemType::Growth => Color::srgb(0.2, 0.8, 0.2),
-            ItemType::Special => Color::srgb(0.0, 0.6, 1.0),
-            ItemType::Invincible => Color::srgb(1.0, 1.0, 0.0),
+        let path = match item_type {
+            ItemType::Growth => "sprites/powerup_growth.png",
+            ItemType::Special => "sprites/powerup_dash.png",
+            ItemType::Invincible => "sprites/powerup_invincible.png",
         };
         commands.entity(entity).insert(Sprite {
-            color,
+            image: asset_server.load(path),
             custom_size: Some(Vec2::new(20.0, 20.0)),
             ..default()
         });
