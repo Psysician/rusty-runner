@@ -62,6 +62,10 @@ impl Plugin for PlayerPlugin {
         app.add_plugins(TnuaAvian2dPlugin::new(PhysicsSchedule));
         app.add_systems(OnEnter(AppState::Playing), spawn_player);
         app.add_systems(
+            Update,
+            reposition_player_to_spawn.run_if(in_state(AppState::Playing)),
+        );
+        app.add_systems(
             PhysicsSchedule,
             player_movement.in_set(TnuaUserControlsSystems),
         );
@@ -113,6 +117,27 @@ fn spawn_player(
         },
         DespawnOnExit(AppState::Playing),
     ));
+}
+
+/// Teleports the player to the spawn point once the level's PlayerSpawn entity
+/// gets tagged (Tiled objects load async, often after OnEnter(Playing)).
+fn reposition_player_to_spawn(
+    spawn_query: Query<&Transform, (With<crate::level::PlayerSpawn>, Without<Player>)>,
+    mut player_query: Query<(&mut Transform, &mut LinearVelocity), With<Player>>,
+    mut repositioned: Local<bool>,
+) {
+    if *repositioned {
+        return;
+    }
+    let Some(spawn_transform) = spawn_query.iter().next() else {
+        return;
+    };
+    let Ok((mut player_transform, mut velocity)) = player_query.single_mut() else {
+        return;
+    };
+    player_transform.translation = spawn_transform.translation;
+    velocity.0 = Vec2::ZERO;
+    *repositioned = true;
 }
 
 const FALL_DEATH_Y: f32 = -500.0;

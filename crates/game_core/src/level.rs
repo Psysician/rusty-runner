@@ -46,7 +46,9 @@ impl Plugin for LevelPlugin {
         );
         app.add_systems(
             Update,
-            process_tiled_objects.run_if(in_state(AppState::Loading)),
+            process_tiled_objects.run_if(
+                in_state(AppState::Loading).or(in_state(AppState::Playing)),
+            ),
         );
     }
 }
