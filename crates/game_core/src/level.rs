@@ -94,9 +94,9 @@ fn check_level_loaded(
 /// Creates physics colliders from Tiled rectangle objects in the collision layer.
 /// Handles objects that TiledPhysicsPlugin may have missed or that load after
 /// the state transition to Playing.
+#[allow(clippy::type_complexity)]
 fn process_tiled_objects(
     mut commands: Commands,
-    #[allow(clippy::type_complexity)]
     objects: Query<
         (Entity, &TiledName, &TiledObject, &Transform),
         (
@@ -257,7 +257,7 @@ fn process_tiled_objects(
                         Collider::rectangle(*width, *height),
                         // Offset the collider center: TiledObject::Rectangle anchor
                         // is top-left, Avian2D collider is centered
-                        TransformInterpolation::default(),
+                        TransformInterpolation,
                     ));
                 }
             }

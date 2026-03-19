@@ -53,22 +53,14 @@ pub enum PlayerScheme {
     Jump(TnuaBuiltinJump),
 }
 
-#[derive(Resource, Default)]
-struct PlayerNeedsReposition(bool);
-
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerConfig>();
-        app.init_resource::<PlayerNeedsReposition>();
         app.add_plugins(TnuaControllerPlugin::<PlayerScheme>::new(PhysicsSchedule));
         app.add_plugins(TnuaAvian2dPlugin::new(PhysicsSchedule));
-        app.add_systems(OnEnter(AppState::Playing), (spawn_player, mark_needs_reposition));
-        app.add_systems(
-            Update,
-            reposition_player_to_spawn.run_if(in_state(AppState::Playing)),
-        );
+        app.add_systems(OnEnter(AppState::Playing), spawn_player);
         app.add_systems(
             PhysicsSchedule,
             player_movement.in_set(TnuaUserControlsSystems),
@@ -80,23 +72,12 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn mark_needs_reposition(mut flag: ResMut<PlayerNeedsReposition>) {
-    flag.0 = true;
-}
-
 fn spawn_player(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     config: Res<PlayerConfig>,
     mut configs: ResMut<Assets<PlayerSchemeConfig>>,
-    spawn_query: Query<&Transform, With<crate::level::PlayerSpawn>>,
 ) {
-    let spawn_pos = spawn_query
-        .iter()
-        .next()
-        .map(|t| t.translation)
-        .unwrap_or(Vec3::new(0.0, 100.0, 0.0));
-
     let config_handle = configs.add(PlayerSchemeConfig {
         basis: TnuaBuiltinWalkConfig {
             float_height: config.float_height,
@@ -109,6 +90,7 @@ fn spawn_player(
         },
     });
 
+    // Player
     commands.spawn((
         Player,
         PowerUpState::default(),
@@ -117,49 +99,101 @@ fn spawn_player(
         LockedAxes::ROTATION_LOCKED,
         TnuaController::<PlayerScheme>::default(),
         TnuaConfig::<PlayerScheme>(config_handle),
-        Transform::from_xyz(spawn_pos.x, spawn_pos.y, spawn_pos.z),
+        Transform::from_xyz(-400.0, 50.0, 1.0),
         Sprite {
             image: asset_server.load("sprites/player.png"),
-            custom_size: Some(Vec2::new(16.0, 24.0)),
+            custom_size: Some(Vec2::new(32.0, 48.0)),
             ..default()
         },
         DespawnOnExit(AppState::Playing),
     ));
 
-    // Guaranteed ground so the player always has something to land on,
-    // even if the Tiled collision layer hasn't loaded yet.
+    // Ground — flat brown path
     commands.spawn((
         RigidBody::Static,
-        Collider::rectangle(5000.0, 50.0),
-        Transform::from_xyz(0.0, -50.0, 0.0),
+        Collider::rectangle(1200.0, 40.0),
+        Transform::from_xyz(0.0, -20.0, 0.0),
         Sprite {
-            color: Color::srgb(0.3, 0.5, 0.2),
-            custom_size: Some(Vec2::new(5000.0, 50.0)),
+            color: Color::srgb(0.45, 0.3, 0.15),
+            custom_size: Some(Vec2::new(1200.0, 40.0)),
             ..default()
         },
         DespawnOnExit(AppState::Playing),
     ));
-}
 
-/// Teleports the player to the spawn point once the level's PlayerSpawn entity
-/// gets tagged (Tiled objects load async, often after OnEnter(Playing)).
-fn reposition_player_to_spawn(
-    spawn_query: Query<&Transform, (With<crate::level::PlayerSpawn>, Without<Player>)>,
-    mut player_query: Query<(&mut Transform, &mut LinearVelocity), With<Player>>,
-    mut flag: ResMut<PlayerNeedsReposition>,
-) {
-    if !flag.0 {
-        return;
-    }
-    let Some(spawn_transform) = spawn_query.iter().next() else {
-        return;
-    };
-    let Ok((mut player_transform, mut velocity)) = player_query.single_mut() else {
-        return;
-    };
-    player_transform.translation = spawn_transform.translation;
-    velocity.0 = Vec2::ZERO;
-    flag.0 = false;
+    // Ant enemy — bounces left/right on the ground
+    commands.spawn((
+        crate::enemy::Enemy,
+        crate::enemy::EnemyType::Walker,
+        crate::enemy::PatrolDirection { right: true },
+        crate::enemy::PatrolConfig {
+            speed: 80.0,
+            distance: 150.0,
+            origin_x: 200.0,
+        },
+        RigidBody::Kinematic,
+        Collider::rectangle(24.0, 24.0),
+        CollisionEventsEnabled,
+        Transform::from_xyz(200.0, 15.0, 1.0),
+        Sprite {
+            image: asset_server.load("sprites/enemy_walker.png"),
+            custom_size: Some(Vec2::new(32.0, 32.0)),
+            ..default()
+        },
+        DespawnOnExit(AppState::Playing),
+    ));
+
+    // Second ant further along
+    commands.spawn((
+        crate::enemy::Enemy,
+        crate::enemy::EnemyType::Walker,
+        crate::enemy::PatrolDirection { right: false },
+        crate::enemy::PatrolConfig {
+            speed: 60.0,
+            distance: 100.0,
+            origin_x: 0.0,
+        },
+        RigidBody::Kinematic,
+        Collider::rectangle(24.0, 24.0),
+        CollisionEventsEnabled,
+        Transform::from_xyz(0.0, 15.0, 1.0),
+        Sprite {
+            image: asset_server.load("sprites/enemy_walker.png"),
+            custom_size: Some(Vec2::new(32.0, 32.0)),
+            ..default()
+        },
+        DespawnOnExit(AppState::Playing),
+    ));
+
+    // Goal at end of path
+    commands.spawn((
+        crate::level::LevelGoal,
+        Collider::rectangle(32.0, 64.0),
+        Sensor,
+        CollisionEventsEnabled,
+        Transform::from_xyz(500.0, 32.0, 1.0),
+        Sprite {
+            image: asset_server.load("sprites/goal.png"),
+            custom_size: Some(Vec2::new(32.0, 64.0)),
+            ..default()
+        },
+        DespawnOnExit(AppState::Playing),
+    ));
+
+    // Coin to collect
+    commands.spawn((
+        crate::level::Coin,
+        Collider::rectangle(16.0, 16.0),
+        Sensor,
+        CollisionEventsEnabled,
+        Transform::from_xyz(-100.0, 40.0, 1.0),
+        Sprite {
+            image: asset_server.load("sprites/coin.png"),
+            custom_size: Some(Vec2::new(16.0, 16.0)),
+            ..default()
+        },
+        DespawnOnExit(AppState::Playing),
+    ));
 }
 
 const FALL_DEATH_Y: f32 = -500.0;
