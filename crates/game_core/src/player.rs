@@ -99,7 +99,7 @@ fn spawn_player(
         LockedAxes::ROTATION_LOCKED,
         TnuaController::<PlayerScheme>::default(),
         TnuaConfig::<PlayerScheme>(config_handle),
-        Transform::from_xyz(-400.0, 50.0, 1.0),
+        Transform::from_xyz(-400.0, 30.0, 1.0),
         Sprite {
             image: asset_server.load("sprites/player.png"),
             custom_size: Some(Vec2::new(32.0, 48.0)),
@@ -108,14 +108,14 @@ fn spawn_player(
         DespawnOnExit(AppState::Playing),
     ));
 
-    // Ground — flat brown path
+    // Ground — flat brown path, thick enough to be clearly visible
     commands.spawn((
         RigidBody::Static,
-        Collider::rectangle(1200.0, 40.0),
-        Transform::from_xyz(0.0, -20.0, 0.0),
+        Collider::rectangle(1200.0, 200.0),
+        Transform::from_xyz(0.0, -100.0, 0.0),
         Sprite {
             color: Color::srgb(0.45, 0.3, 0.15),
-            custom_size: Some(Vec2::new(1200.0, 40.0)),
+            custom_size: Some(Vec2::new(1200.0, 200.0)),
             ..default()
         },
         DespawnOnExit(AppState::Playing),
@@ -134,7 +134,7 @@ fn spawn_player(
         RigidBody::Kinematic,
         Collider::rectangle(24.0, 24.0),
         CollisionEventsEnabled,
-        Transform::from_xyz(200.0, 15.0, 1.0),
+        Transform::from_xyz(200.0, 12.0, 1.0),
         Sprite {
             image: asset_server.load("sprites/enemy_walker.png"),
             custom_size: Some(Vec2::new(32.0, 32.0)),
@@ -156,7 +156,7 @@ fn spawn_player(
         RigidBody::Kinematic,
         Collider::rectangle(24.0, 24.0),
         CollisionEventsEnabled,
-        Transform::from_xyz(0.0, 15.0, 1.0),
+        Transform::from_xyz(0.0, 12.0, 1.0),
         Sprite {
             image: asset_server.load("sprites/enemy_walker.png"),
             custom_size: Some(Vec2::new(32.0, 32.0)),

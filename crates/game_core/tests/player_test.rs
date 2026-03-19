@@ -78,7 +78,7 @@ fn player_moves_right_on_input() {
     let mut app = build_test_app();
     transition_to_playing(&mut app);
 
-    run_physics_frames(&mut app, 30);
+    run_physics_frames(&mut app, 200);
 
     let initial_x = app
         .world_mut()
@@ -101,7 +101,7 @@ fn player_moves_right_on_input() {
 
     app.add_systems(PreUpdate, send_move_right);
 
-    run_physics_frames(&mut app, 30);
+    run_physics_frames(&mut app, 200);
 
     let final_x = app
         .world_mut()
