@@ -1,8 +1,5 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_tnua::prelude::*;
-use bevy_tnua::builtins::{TnuaBuiltinJumpConfig, TnuaBuiltinWalkConfig};
-use bevy_tnua_avian2d::prelude::*;
 
 use crate::input::GameInputMessage;
 use crate::state::{AppState, GameData, GamePhase};
@@ -30,40 +27,24 @@ pub struct InvincibilityTimer {
 #[derive(Component)]
 pub struct Player;
 
-#[derive(Resource)]
-pub struct PlayerConfig {
-    pub move_speed: f32,
-    pub jump_height: f32,
-    pub float_height: f32,
-}
+#[derive(Component)]
+pub struct Grounded(pub bool);
 
-impl Default for PlayerConfig {
-    fn default() -> Self {
-        Self {
-            move_speed: 300.0,
-            jump_height: 200.0,
-            float_height: 20.0,
-        }
-    }
-}
-
-#[derive(TnuaScheme)]
-#[scheme(basis = TnuaBuiltinWalk)]
-pub enum PlayerScheme {
-    Jump(TnuaBuiltinJump),
-}
+const MOVE_SPEED: f32 = 300.0;
+const JUMP_VELOCITY: f32 = 500.0;
+const GROUND_Y: f32 = 0.0;
+const PLAYER_HALF_H: f32 = 12.0;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<PlayerConfig>();
-        app.add_plugins(TnuaControllerPlugin::<PlayerScheme>::new(PhysicsSchedule));
-        app.add_plugins(TnuaAvian2dPlugin::new(PhysicsSchedule));
         app.add_systems(OnEnter(AppState::Playing), spawn_player);
         app.add_systems(
-            PhysicsSchedule,
-            player_movement.in_set(TnuaUserControlsSystems),
+            FixedUpdate,
+            (player_movement, check_grounded)
+                .chain()
+                .run_if(in_state(AppState::Playing)),
         );
         app.add_systems(
             Update,
@@ -72,33 +53,16 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn spawn_player(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    config: Res<PlayerConfig>,
-    mut configs: ResMut<Assets<PlayerSchemeConfig>>,
-) {
-    let config_handle = configs.add(PlayerSchemeConfig {
-        basis: TnuaBuiltinWalkConfig {
-            float_height: config.float_height,
-            speed: config.move_speed,
-            ..default()
-        },
-        jump: TnuaBuiltinJumpConfig {
-            height: config.jump_height,
-            ..default()
-        },
-    });
-
+fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Player
     commands.spawn((
         Player,
+        Grounded(false),
         PowerUpState::default(),
         RigidBody::Dynamic,
         Collider::rectangle(16.0, 24.0),
         LockedAxes::ROTATION_LOCKED,
-        TnuaController::<PlayerScheme>::default(),
-        TnuaConfig::<PlayerScheme>(config_handle),
+        LinearVelocity::default(),
         Transform::from_xyz(-400.0, 30.0, 1.0),
         Sprite {
             image: asset_server.load("sprites/player.png"),
@@ -108,7 +72,7 @@ fn spawn_player(
         DespawnOnExit(AppState::Playing),
     ));
 
-    // Ground — flat brown path, thick enough to be clearly visible
+    // Ground — flat brown path
     commands.spawn((
         RigidBody::Static,
         Collider::rectangle(1200.0, 200.0),
@@ -121,7 +85,7 @@ fn spawn_player(
         DespawnOnExit(AppState::Playing),
     ));
 
-    // Ant enemy — bounces left/right on the ground
+    // Ant enemy — bounces left/right
     commands.spawn((
         crate::enemy::Enemy,
         crate::enemy::EnemyType::Walker,
@@ -143,7 +107,7 @@ fn spawn_player(
         DespawnOnExit(AppState::Playing),
     ));
 
-    // Second ant further along
+    // Second ant
     commands.spawn((
         crate::enemy::Enemy,
         crate::enemy::EnemyType::Walker,
@@ -165,7 +129,7 @@ fn spawn_player(
         DespawnOnExit(AppState::Playing),
     ));
 
-    // Goal at end of path
+    // Goal
     commands.spawn((
         crate::level::LevelGoal,
         Collider::rectangle(32.0, 64.0),
@@ -180,7 +144,7 @@ fn spawn_player(
         DespawnOnExit(AppState::Playing),
     ));
 
-    // Coin to collect
+    // Coin
     commands.spawn((
         crate::level::Coin,
         Collider::rectangle(16.0, 16.0),
@@ -194,6 +158,53 @@ fn spawn_player(
         },
         DespawnOnExit(AppState::Playing),
     ));
+}
+
+fn check_grounded(mut query: Query<(&Transform, &mut Grounded), With<Player>>) {
+    for (transform, mut grounded) in &mut query {
+        grounded.0 = transform.translation.y <= GROUND_Y + PLAYER_HALF_H + 2.0;
+    }
+}
+
+fn player_movement(
+    keys: Option<Res<ButtonInput<KeyCode>>>,
+    mut reader: MessageReader<GameInputMessage>,
+    mut query: Query<(&mut LinearVelocity, &Grounded), With<Player>>,
+) {
+    let mut move_dir = 0.0f32;
+    let mut jump = false;
+
+    // AI bot messages
+    for msg in reader.read() {
+        if msg.move_left { move_dir -= 1.0; }
+        if msg.move_right { move_dir += 1.0; }
+        if msg.jump_pressed { jump = true; }
+    }
+
+    // Direct keyboard
+    if let Some(keys) = &keys {
+        if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
+            move_dir -= 1.0;
+        }
+        if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
+            move_dir += 1.0;
+        }
+        if keys.just_pressed(KeyCode::Space)
+            || keys.just_pressed(KeyCode::KeyW)
+            || keys.just_pressed(KeyCode::ArrowUp)
+        {
+            jump = true;
+        }
+    }
+
+    move_dir = move_dir.clamp(-1.0, 1.0);
+
+    for (mut velocity, grounded) in &mut query {
+        velocity.x = move_dir * MOVE_SPEED;
+        if jump && grounded.0 {
+            velocity.y = JUMP_VELOCITY;
+        }
+    }
 }
 
 const FALL_DEATH_Y: f32 = -500.0;
@@ -216,68 +227,6 @@ fn check_fall_death(
             next_state.set(AppState::GameOver);
         } else {
             next_phase.set(GamePhase::Dying);
-        }
-    }
-}
-
-fn player_movement(
-    keys: Option<Res<ButtonInput<KeyCode>>>,
-    mut reader: MessageReader<GameInputMessage>,
-    mut query: Query<&mut TnuaController<PlayerScheme>, With<Player>>,
-) {
-    let mut move_dir = 0.0f32;
-    let mut jump_pressed = false;
-    let mut jump_held = false;
-
-    // Read from message system (used by AI bots)
-    for msg in reader.read() {
-        if msg.move_left {
-            move_dir -= 1.0;
-        }
-        if msg.move_right {
-            move_dir += 1.0;
-        }
-        if msg.jump_pressed {
-            jump_pressed = true;
-        }
-        if msg.jump_held {
-            jump_held = true;
-        }
-    }
-
-    // Also read keyboard directly (reliable in all schedules)
-    if let Some(keys) = &keys {
-        if keys.pressed(KeyCode::KeyA) || keys.pressed(KeyCode::ArrowLeft) {
-            move_dir -= 1.0;
-        }
-        if keys.pressed(KeyCode::KeyD) || keys.pressed(KeyCode::ArrowRight) {
-            move_dir += 1.0;
-        }
-        if keys.just_pressed(KeyCode::Space)
-            || keys.just_pressed(KeyCode::KeyW)
-            || keys.just_pressed(KeyCode::ArrowUp)
-        {
-            jump_pressed = true;
-        }
-        if keys.pressed(KeyCode::Space)
-            || keys.pressed(KeyCode::KeyW)
-            || keys.pressed(KeyCode::ArrowUp)
-        {
-            jump_held = true;
-        }
-    }
-
-    move_dir = move_dir.clamp(-1.0, 1.0);
-
-    for mut controller in query.iter_mut() {
-        controller.basis = TnuaBuiltinWalk {
-            desired_motion: bevy_tnua::math::Vector3::new(move_dir, 0.0, 0.0),
-            ..default()
-        };
-
-        controller.initiate_action_feeding();
-        if jump_pressed || jump_held {
-            controller.action(PlayerScheme::Jump(TnuaBuiltinJump::default()));
         }
     }
 }

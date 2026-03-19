@@ -1,8 +1,9 @@
-use avian2d::prelude::*;
 use bevy::asset::AssetPlugin;
 use bevy::ecs::error::{BevyError, DefaultErrorHandler, ErrorContext};
 use bevy::prelude::*;
 use bevy::state::app::StatesPlugin;
+use game_core::collision::CollisionPlugin;
+use game_core::enemy::EnemyPlugin;
 use game_core::input::{GameInputMessage, InputPlugin};
 use game_core::physics::PhysicsPlugin;
 use game_core::player::{Player, PlayerPlugin};
@@ -17,14 +18,6 @@ fn diagnostic_handler(error: BevyError, ctx: ErrorContext) {
     );
 }
 
-fn spawn_ground(mut commands: Commands) {
-    commands.spawn((
-        RigidBody::Static,
-        Collider::rectangle(1000.0, 50.0),
-        Transform::from_xyz(0.0, -50.0, 0.0),
-    ));
-}
-
 fn build_test_app() -> App {
     let mut app = App::new();
     app.add_plugins(MinimalPlugins);
@@ -37,9 +30,10 @@ fn build_test_app() -> App {
     app.add_plugins(InputPlugin);
     app.add_plugins(PhysicsPlugin);
     app.add_plugins(PlayerPlugin);
+    app.add_plugins(EnemyPlugin);
+    app.add_plugins(CollisionPlugin);
     app.world_mut()
         .insert_resource(DefaultErrorHandler(diagnostic_handler));
-    app.add_systems(OnEnter(AppState::Playing), spawn_ground);
     app.finish();
     app.cleanup();
     app
