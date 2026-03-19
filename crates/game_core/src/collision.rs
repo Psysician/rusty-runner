@@ -149,13 +149,12 @@ fn handle_player_hit(
 
 fn detect_boss_stomp(
     collisions: Collisions,
-    player_query: Query<(Entity, &Transform), With<Player>>,
+    mut player_query: Query<(Entity, &Transform, &mut LinearVelocity), With<Player>>,
     mut boss_query: Query<(Entity, &Transform, &mut Boss, &mut BossPhase)>,
-    mut player_vel: Query<&mut LinearVelocity, With<Player>>,
     mut next_state: ResMut<NextState<AppState>>,
     mut game_data: ResMut<GameData>,
 ) {
-    let Ok((player_entity, player_transform)) = player_query.single() else {
+    let Ok((player_entity, player_transform, mut player_vel)) = player_query.single_mut() else {
         return;
     };
 
@@ -164,8 +163,7 @@ fn detect_boss_stomp(
             continue;
         }
 
-        let is_paused = matches!(*phase, BossPhase::PausedAtWall { .. });
-        if !is_paused {
+        if !matches!(*phase, BossPhase::PausedAtWall { .. }) {
             continue;
         }
 
@@ -175,10 +173,7 @@ fn detect_boss_stomp(
         if player_bottom >= boss_top - STOMP_TOLERANCE {
             boss.hp = boss.hp.saturating_sub(1);
             game_data.score += 500;
-
-            if let Ok(mut velocity) = player_vel.single_mut() {
-                velocity.y = STOMP_BOUNCE_VELOCITY;
-            }
+            player_vel.y = STOMP_BOUNCE_VELOCITY;
 
             if boss.hp == 0 {
                 next_state.set(AppState::Victory);
