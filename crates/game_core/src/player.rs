@@ -53,14 +53,18 @@ pub enum PlayerScheme {
     Jump(TnuaBuiltinJump),
 }
 
+#[derive(Resource, Default)]
+struct PlayerNeedsReposition(bool);
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerConfig>();
+        app.init_resource::<PlayerNeedsReposition>();
         app.add_plugins(TnuaControllerPlugin::<PlayerScheme>::new(PhysicsSchedule));
         app.add_plugins(TnuaAvian2dPlugin::new(PhysicsSchedule));
-        app.add_systems(OnEnter(AppState::Playing), spawn_player);
+        app.add_systems(OnEnter(AppState::Playing), (spawn_player, mark_needs_reposition));
         app.add_systems(
             Update,
             reposition_player_to_spawn.run_if(in_state(AppState::Playing)),
@@ -74,6 +78,10 @@ impl Plugin for PlayerPlugin {
             check_fall_death.run_if(in_state(GamePhase::Active)),
         );
     }
+}
+
+fn mark_needs_reposition(mut flag: ResMut<PlayerNeedsReposition>) {
+    flag.0 = true;
 }
 
 fn spawn_player(
@@ -117,6 +125,20 @@ fn spawn_player(
         },
         DespawnOnExit(AppState::Playing),
     ));
+
+    // Guaranteed ground so the player always has something to land on,
+    // even if the Tiled collision layer hasn't loaded yet.
+    commands.spawn((
+        RigidBody::Static,
+        Collider::rectangle(5000.0, 50.0),
+        Transform::from_xyz(0.0, -50.0, 0.0),
+        Sprite {
+            color: Color::srgb(0.3, 0.5, 0.2),
+            custom_size: Some(Vec2::new(5000.0, 50.0)),
+            ..default()
+        },
+        DespawnOnExit(AppState::Playing),
+    ));
 }
 
 /// Teleports the player to the spawn point once the level's PlayerSpawn entity
@@ -124,9 +146,9 @@ fn spawn_player(
 fn reposition_player_to_spawn(
     spawn_query: Query<&Transform, (With<crate::level::PlayerSpawn>, Without<Player>)>,
     mut player_query: Query<(&mut Transform, &mut LinearVelocity), With<Player>>,
-    mut repositioned: Local<bool>,
+    mut flag: ResMut<PlayerNeedsReposition>,
 ) {
-    if *repositioned {
+    if !flag.0 {
         return;
     }
     let Some(spawn_transform) = spawn_query.iter().next() else {
@@ -137,7 +159,7 @@ fn reposition_player_to_spawn(
     };
     player_transform.translation = spawn_transform.translation;
     velocity.0 = Vec2::ZERO;
-    *repositioned = true;
+    flag.0 = false;
 }
 
 const FALL_DEATH_Y: f32 = -500.0;

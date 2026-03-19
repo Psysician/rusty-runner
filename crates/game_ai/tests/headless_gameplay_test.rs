@@ -77,6 +77,31 @@ fn transition_to(app: &mut App, state: AppState) {
 }
 
 #[test]
+fn player_lands_on_ground_and_stays() {
+    let mut app = build_gameplay_test_app();
+    app.update();
+    transition_to(&mut app, AppState::Playing);
+
+    // Let physics settle (player falls onto ground)
+    for _ in 0..100 {
+        app.update();
+    }
+
+    let player_y = app
+        .world_mut()
+        .query_filtered::<&Transform, With<game_core::player::Player>>()
+        .single(app.world())
+        .unwrap()
+        .translation
+        .y;
+
+    assert!(
+        player_y > -100.0,
+        "Player should have landed on ground, not fallen through (y={player_y})"
+    );
+}
+
+#[test]
 fn headless_rightrunner_completes_test_level() {
     let mut app = build_gameplay_test_app();
     app.update();

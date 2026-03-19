@@ -71,20 +71,48 @@ fn load_level(
 fn check_level_loaded(
     map_query: Query<&TiledMapStorage, With<LevelMap>>,
     mut next_state: ResMut<NextState<AppState>>,
+    time: Res<Time>,
+    mut elapsed: Local<f32>,
 ) {
+    // Check if any layers exist (normal path)
     for storage in map_query.iter() {
         if storage.layers().next().is_some() {
+            *elapsed = 0.0;
             next_state.set(AppState::Playing);
+            return;
         }
+    }
+    // Fallback: if map takes too long (>2s), proceed anyway.
+    // The spawn_level_colliders system will create ground.
+    *elapsed += time.delta_secs();
+    if *elapsed > 2.0 {
+        *elapsed = 0.0;
+        next_state.set(AppState::Playing);
     }
 }
 
-#[allow(clippy::type_complexity)]
+/// Creates physics colliders from Tiled rectangle objects in the collision layer.
+/// Handles objects that TiledPhysicsPlugin may have missed or that load after
+/// the state transition to Playing.
 fn process_tiled_objects(
     mut commands: Commands,
-    objects: Query<(Entity, &TiledName), (With<TiledObject>, Without<PlayerSpawn>, Without<LevelGoal>, Without<Coin>, Without<crate::enemy::Enemy>, Without<crate::platforms::MovingPlatform>, Without<crate::wind::WindZone>, Without<crate::items::ItemType>, Without<crate::boss::Boss>)>,
+    #[allow(clippy::type_complexity)]
+    objects: Query<
+        (Entity, &TiledName, &TiledObject, &Transform),
+        (
+            Without<PlayerSpawn>,
+            Without<LevelGoal>,
+            Without<Coin>,
+            Without<crate::enemy::Enemy>,
+            Without<crate::platforms::MovingPlatform>,
+            Without<crate::wind::WindZone>,
+            Without<crate::items::ItemType>,
+            Without<crate::boss::Boss>,
+            Without<RigidBody>,
+        ),
+    >,
 ) {
-    for (entity, name) in objects.iter() {
+    for (entity, name, tiled_obj, _transform) in objects.iter() {
         match name.0.as_str() {
             "player_spawn" => {
                 commands.entity(entity).insert(PlayerSpawn);
@@ -115,8 +143,8 @@ fn process_tiled_objects(
                         distance: 100.0,
                         origin_x: 0.0,
                     },
-                    avian2d::prelude::RigidBody::Kinematic,
-                    avian2d::prelude::Collider::rectangle(24.0, 24.0),
+                    RigidBody::Kinematic,
+                    Collider::rectangle(24.0, 24.0),
                     CollisionEventsEnabled,
                 ));
             }
@@ -221,7 +249,18 @@ fn process_tiled_objects(
                     CollisionEventsEnabled,
                 ));
             }
-            _ => {}
+            _ => {
+                // Create static colliders from unnamed/collision-layer rectangles
+                if let TiledObject::Rectangle { width, height } = tiled_obj {
+                    commands.entity(entity).insert((
+                        RigidBody::Static,
+                        Collider::rectangle(*width, *height),
+                        // Offset the collider center: TiledObject::Rectangle anchor
+                        // is top-left, Avian2D collider is centered
+                        TransformInterpolation::default(),
+                    ));
+                }
+            }
         }
     }
 }
