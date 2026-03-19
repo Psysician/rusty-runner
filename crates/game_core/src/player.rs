@@ -5,7 +5,7 @@ use bevy_tnua::builtins::{TnuaBuiltinJumpConfig, TnuaBuiltinWalkConfig};
 use bevy_tnua_avian2d::prelude::*;
 
 use crate::input::GameInputMessage;
-use crate::state::AppState;
+use crate::state::{AppState, GameData, GamePhase};
 
 #[derive(Component, Debug, Clone, PartialEq, Default)]
 pub enum PowerUpState {
@@ -65,6 +65,10 @@ impl Plugin for PlayerPlugin {
             PhysicsSchedule,
             player_movement.in_set(TnuaUserControlsSystems),
         );
+        app.add_systems(
+            Update,
+            check_fall_death.run_if(in_state(GamePhase::Active)),
+        );
     }
 }
 
@@ -109,6 +113,30 @@ fn spawn_player(
         },
         DespawnOnExit(AppState::Playing),
     ));
+}
+
+const FALL_DEATH_Y: f32 = -500.0;
+
+fn check_fall_death(
+    player_query: Query<&Transform, With<Player>>,
+    mut game_data: ResMut<GameData>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut next_phase: ResMut<NextState<GamePhase>>,
+) {
+    let Ok(transform) = player_query.single() else {
+        return;
+    };
+
+    if transform.translation.y < FALL_DEATH_Y {
+        if game_data.lives > 0 {
+            game_data.lives -= 1;
+        }
+        if game_data.lives == 0 {
+            next_state.set(AppState::GameOver);
+        } else {
+            next_phase.set(GamePhase::Dying);
+        }
+    }
 }
 
 fn player_movement(

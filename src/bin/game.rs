@@ -12,6 +12,7 @@ fn main() {
             }),
             ..default()
         }))
+        .insert_resource(ClearColor(Color::srgb(0.4, 0.6, 0.9)))
         .add_plugins(GameCorePlugin)
         .add_plugins(GameRenderPlugin)
         .run();
