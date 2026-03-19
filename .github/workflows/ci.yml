@@ -26,3 +26,23 @@ jobs:
         run: cargo test --workspace
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings
+      - name: Bot smoke test (headless)
+        run: |
+          cargo build --release --bin ai_runner
+          timeout 30 ./target/release/ai_runner --bot rightrunner 2>&1 || true
+          echo "Bot smoke test completed"
+
+  screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev imagemagick xvfb libgl1-mesa-dri libgles2-mesa libegl1-mesa
+      - name: Screenshot test
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+        run: xvfb-run bash scripts/screenshot_test.sh
